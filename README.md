@@ -417,6 +417,9 @@ Após o tuning, os modelos apresentaram os seguintes resultados médios durante 
 | Random Forest Tuned | 0.772 | 0.974 | 0.210 |
 | XGBoost Tuned | 0.827 | 1.052 | 0.225 |
 
+<img width="1212" height="447" alt="Captura de tela 2026-08-21 101909" src="https://github.com/user-attachments/assets/028d9b86-f231-47aa-ba98-ddcd1f788133" />
+
+
 O SARIMAX apresentou o melhor desempenho nas três métricas avaliadas.
 
 Esse resultado mostra que, para esta série univariada com forte tendência e sazonalidade, o modelo estatístico conseguiu representar a estrutura temporal de forma mais eficiente que os modelos de Machine Learning avaliados.
@@ -450,6 +453,9 @@ Visualmente, as previsões acompanharam de forma consistente:
 
 Os resultados reforçaram a capacidade de generalização do modelo.
 
+<img width="1185" height="483" alt="Captura de tela 2026-08-21 102408" src="https://github.com/user-attachments/assets/0b41a191-196c-4ef3-987d-a57652d7d2ce" />
+
+
 ---
 
 # 9. Forecast Futuro
@@ -463,6 +469,9 @@ Foi então realizado um forecast para as próximas:
 Também foram calculados intervalos de confiança para representar a incerteza associada às previsões.
 
 O forecast manteve o padrão sazonal observado historicamente, com crescimento no início do ano, pico sazonal, redução ao longo do segundo semestre e recuperação no final do ciclo.
+
+<img width="1211" height="505" alt="Captura de tela 2026-08-21 102546" src="https://github.com/user-attachments/assets/9b602536-cb22-42dc-8500-3637d9adb1af" />
+
 
 ---
 
@@ -530,6 +539,9 @@ Data                   = 27/07/2002
 Visualmente, observa-se um período predominantemente crescente no início do ano, seguido por uma sequência de reduções durante o meio do ciclo anual e posterior retomada do crescimento.
 
 Esse comportamento é consistente com o padrão sazonal identificado anteriormente na análise exploratória.
+
+<img width="1212" height="509" alt="Captura de tela 2026-08-21 102701" src="https://github.com/user-attachments/assets/b738f873-e460-48b4-996b-aac2ac12f5a5" />
+
 
 ## Comparação com o Último Ano
 
