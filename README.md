@@ -2,7 +2,7 @@
 
 Projeto de séries temporais para análise e previsão da concentração atmosférica de CO₂ utilizando modelos estatísticos clássicos e algoritmos de Machine Learning.
 
-O objetivo principal é construir um pipeline completo de forecasting, desde a validação e tratamento dos dados até a comparação entre diferentes modelos, avaliação em dados futuros e geração de previsões para apoio ao monitoramento.
+O objetivo principal é construir um pipeline completo de forecasting, desde a validação e tratamento dos dados até a comparação entre diferentes modelos, avaliação em dados futuros, geração de previsões e disponibilização dos resultados em uma aplicação Streamlit.
 
 ---
 
@@ -14,7 +14,7 @@ Este projeto busca responder à seguinte pergunta:
 
 Para isso, foram avaliadas diferentes abordagens de forecasting utilizando a série histórica de concentração atmosférica de CO₂ de Mauna Loa.
 
-O projeto também explora como transformar previsões em informações úteis para monitoramento e tomada de decisão.
+Além da etapa de modelagem, o projeto também explora como transformar previsões em informações úteis para monitoramento e tomada de decisão.
 
 ---
 
@@ -41,12 +41,18 @@ co2-forecasting-statistical-vs-ml/
 ├── data/
 │   └── co2_clean.csv
 │
+├── models/
+│   └── sarimax_final.pkl
+│
 ├── notebooks/
 │   ├── 01_data_validation_and_cleaning.ipynb
 │   ├── 02_time_series_eda.ipynb
 │   └── 03_models.ipynb
 │
 ├── src/
+│   ├── __init__.py
+│   ├── forecast.py
+│   └── app.py
 │
 ├── .gitignore
 ├── requirements.txt
@@ -415,6 +421,7 @@ O SARIMAX apresentou o melhor desempenho nas três métricas avaliadas.
 
 Esse resultado mostra que, para esta série univariada com forte tendência e sazonalidade, o modelo estatístico conseguiu representar a estrutura temporal de forma mais eficiente que os modelos de Machine Learning avaliados.
 
+
 ---
 
 # 8. Modelo Final
@@ -455,21 +462,24 @@ Foi então realizado um forecast para as próximas:
 
 Também foram calculados intervalos de confiança para representar a incerteza associada às previsões.
 
+O forecast manteve o padrão sazonal observado historicamente, com crescimento no início do ano, pico sazonal, redução ao longo do segundo semestre e recuperação no final do ciclo.
+
 ---
 
 # 10. Geração de Valor
 
-A previsão foi transformada em indicadores que poderiam apoiar um cenário real de monitoramento ambiental.
+A previsão foi transformada em indicadores capazes de apoiar um cenário real de monitoramento ambiental.
 
 Foram analisados:
 
 - média prevista;
 - máximo previsto;
 - mínimo previsto;
+- intervalo de confiança;
 - variação semanal;
 - comparação com o último ano observado.
 
-Resultados do forecast:
+## Resumo do Forecast
 
 ```text
 Média prevista  = 372.42
@@ -483,7 +493,7 @@ Maior concentração prevista:
 375.18
 ```
 
-em aproximadamente:
+em:
 
 ```text
 18/05/2002
@@ -495,11 +505,31 @@ Menor concentração prevista:
 369.05
 ```
 
-em aproximadamente:
+em:
 
 ```text
 21/09/2002
 ```
+
+## Evolução Semanal Prevista
+
+Também foi analisada a variação entre semanas consecutivas.
+
+As barras positivas representam aumento da concentração prevista de CO₂, enquanto valores negativos representam redução em relação à semana anterior.
+
+Os principais movimentos identificados foram:
+
+```text
+Maior aumento semanal = +0.628
+Data                   = 16/03/2002
+
+Maior redução semanal = -0.677
+Data                   = 27/07/2002
+```
+
+Visualmente, observa-se um período predominantemente crescente no início do ano, seguido por uma sequência de reduções durante o meio do ciclo anual e posterior retomada do crescimento.
+
+Esse comportamento é consistente com o padrão sazonal identificado anteriormente na análise exploratória.
 
 ## Comparação com o Último Ano
 
@@ -531,15 +561,95 @@ O modelo projeta, portanto, continuidade da tendência crescente da concentraç�
 
 ---
 
+# 11. Exportação do Modelo Final
+
+Após a validação e geração das previsões futuras, o modelo SARIMAX treinado com todo o histórico foi serializado para reutilização fora do notebook.
+
+A exportação foi realizada com `joblib`:
+
+```python
+import joblib
+
+joblib.dump(
+    modelo_producao,
+    "sarimax_final.pkl"
+)
+```
+
+O arquivo foi armazenado em:
+
+```text
+models/sarimax_final.pkl
+```
+
+Essa etapa permite reutilizar o modelo diretamente na aplicação Streamlit sem necessidade de novo treinamento a cada execução.
+
+---
+
+# 12. Aplicação Streamlit
+
+O projeto também inclui uma aplicação interativa construída com Streamlit.
+
+A aplicação utiliza o modelo SARIMAX exportado e a base histórica tratada para disponibilizar os principais resultados de forma visual e interativa.
+
+A camada de aplicação está organizada dentro da pasta `src/`:
+
+```text
+src/
+├── __init__.py
+├── forecast.py
+└── app.py
+```
+
+## `forecast.py`
+
+Responsável pela lógica de forecasting e funções reutilizáveis, incluindo:
+
+- carregamento do modelo serializado;
+- geração de forecasts;
+- cálculo de intervalos de confiança;
+- resumo das previsões;
+- cálculo da variação semanal;
+- comparação com o último ano observado;
+- exportação do forecast em CSV.
+
+## `app.py`
+
+Responsável pela interface Streamlit.
+
+A aplicação possui quatro áreas principais:
+
+- **Visão geral**
+- **Análise histórica**
+- **Forecast de CO₂**
+- **Sobre o projeto**
+
+Na página de forecast, o usuário pode selecionar o horizonte desejado e visualizar:
+
+- média prevista;
+- maior concentração prevista;
+- menor concentração prevista;
+- intervalo de confiança;
+- variação em relação ao último ano;
+- gráfico histórico e forecast;
+- variação semanal;
+- tabela com previsões;
+- download dos resultados em CSV.
+
+O horizonte oficial utilizado no projeto é de **52 semanas**, enquanto a aplicação permite exploração de diferentes horizontes de forma interativa.
+
+---
+
 # Possível Aplicação
 
-Em um cenário real, esse tipo de modelo poderia ser integrado a:
+Em um cenário real, esse tipo de solução poderia ser integrado a:
 
 - dashboards ambientais;
 - sistemas de monitoramento;
 - relatórios de sustentabilidade;
 - plataformas de indicadores climáticos;
-- sistemas de alerta.
+- sistemas de alerta;
+- pipelines automatizados de previsão.
 
 Uma arquitetura futura poderia seguir:
 
@@ -548,16 +658,22 @@ Novas medições
       ↓
 Pipeline de dados
       ↓
+Tratamento e validação
+      ↓
 Modelo SARIMAX
       ↓
 Forecast
+      ↓
+Intervalo de confiança
       ↓
 Dashboard / Monitoramento
       ↓
 Tomada de decisão
 ```
 
-É importante destacar que o modelo possui finalidade preditiva. Portanto, ele estima o comportamento futuro da série com base nos padrões históricos, mas não identifica relações causais sobre os fatores responsáveis pelas variações observadas na concentração de CO₂.
+É importante destacar que o modelo possui finalidade preditiva.
+
+Portanto, ele estima o comportamento futuro da série com base nos padrões históricos, mas não identifica relações causais sobre os fatores responsáveis pelas variações observadas na concentração de CO₂.
 
 ---
 
@@ -572,6 +688,8 @@ O projeto utiliza:
 - Statsmodels
 - Scikit-learn
 - XGBoost
+- Streamlit
+- Joblib
 - Jupyter Notebook
 - VS Code
 - Git
@@ -619,7 +737,11 @@ Instale as dependências:
 python -m pip install -r requirements.txt
 ```
 
-Em seguida, abra os notebooks na ordem:
+---
+
+## Executando os Notebooks
+
+Abra os notebooks na seguinte ordem:
 
 ```text
 01_data_validation_and_cleaning.ipynb
@@ -629,45 +751,94 @@ Em seguida, abra os notebooks na ordem:
 
 ---
 
-# Conclusão
+## Executando a Aplicação Streamlit
 
-O projeto percorreu todas as principais etapas de um problema de forecasting:
+A partir da raiz do projeto, execute:
 
-```text
-Validação dos Dados
-        ↓
-Tratamento
-        ↓
-Análise Exploratória
-        ↓
-Tendência e Sazonalidade
-        ↓
-Estacionariedade
-        ↓
-Feature Engineering
-        ↓
-Modelos Estatísticos
-        ↓
-Machine Learning
-        ↓
-Walk-Forward Validation
-        ↓
-Tuning
-        ↓
-Comparação
-        ↓
-Teste Final
-        ↓
-Forecast Futuro
+```bash
+python -m streamlit run src/app.py
 ```
 
-O principal resultado foi a seleção do **SARIMAX(1,1,1)(1,1,1,52)** como modelo de melhor desempenho.
+A aplicação utilizará automaticamente:
 
-Mesmo após a otimização dos modelos de Machine Learning, o SARIMAX apresentou menores erros durante a validação temporal e manteve excelente desempenho no conjunto de teste final.
+```text
+data/co2_clean.csv
+models/sarimax_final.pkl
+```
 
-O resultado reforça que a escolha de um modelo deve ser orientada pelas características do problema e pelos resultados de validação, e não apenas pela complexidade do algoritmo.
+---
 
-Para esta série, a forte estrutura de tendência e sazonalidade favoreceu uma abordagem estatística clássica.
+# Fluxo Completo do Projeto
+
+```text
+Dados brutos
+      ↓
+Validação dos Dados
+      ↓
+Tratamento
+      ↓
+Análise Exploratória
+      ↓
+Tendência e Sazonalidade
+      ↓
+Estacionariedade
+      ↓
+ACF / PACF
+      ↓
+Feature Engineering
+      ↓
+Modelos Estatísticos
+      +
+Machine Learning
+      ↓
+Walk-Forward Validation
+      ↓
+Tuning
+      ↓
+Comparação dos Modelos
+      ↓
+SARIMAX selecionado
+      ↓
+Teste Final
+      ↓
+Forecast Futuro
+      ↓
+Geração de Indicadores
+      ↓
+Exportação do Modelo
+      ↓
+Aplicação Streamlit
+```
+
+---
+
+# Conclusão
+
+O projeto percorreu as principais etapas de um problema completo de forecasting, desde a preparação dos dados até a disponibilização do modelo em uma aplicação interativa.
+
+A análise exploratória revelou uma série com forte tendência crescente e sazonalidade anual bem definida.
+
+Após os testes de estacionariedade e análise de autocorrelação, foram avaliados modelos estatísticos e algoritmos de Machine Learning.
+
+Mesmo após a otimização dos modelos de Machine Learning, o **SARIMAX(1,1,1)(1,1,1,52)** apresentou o melhor desempenho médio durante a validação temporal.
+
+No conjunto de teste final, o modelo apresentou:
+
+```text
+MAE  = 0.335
+RMSE = 0.421
+MAPE = 0.090%
+```
+
+Além dos bons resultados quantitativos, a previsão acompanhou visualmente de forma consistente o comportamento real da série, capturando o ciclo sazonal e a dinâmica anual da concentração de CO₂.
+
+O modelo final foi então treinado utilizando todo o histórico disponível e empregado para gerar previsões futuras de 52 semanas, intervalos de confiança e indicadores de evolução temporal.
+
+O projeto também avançou além dos notebooks, incluindo a serialização do modelo com `joblib` e a construção de uma aplicação Streamlit para visualização e exploração interativa das previsões.
+
+O principal aprendizado do projeto é que a escolha de um modelo deve ser orientada pelas características da série e pelos resultados de validação, e não apenas pela complexidade do algoritmo.
+
+Para esta série temporal univariada, com tendência e sazonalidade fortemente estruturadas, a abordagem estatística apresentou desempenho superior aos modelos de Machine Learning avaliados.
 
 ---
 
@@ -679,14 +850,18 @@ Como próximos passos, o projeto pode ser expandido com:
 - comparação com SARIMAX multivariado;
 - LightGBM e CatBoost;
 - Prophet;
-- modelos de Deep Learning;
+- modelos de Deep Learning para séries temporais;
 - otimização mais ampla dos parâmetros SARIMA;
 - backtesting com diferentes horizontes;
 - MLflow para rastreamento de experimentos;
+- testes automatizados;
 - criação de API com FastAPI;
-- dashboard com Streamlit;
 - automação do pipeline;
-- deploy em ambiente cloud.
+- atualização automática do modelo;
+- monitoramento de drift;
+- deploy da aplicação Streamlit;
+- deploy em ambiente cloud;
+- integração com uma fonte de dados atualizada.
 
 ---
 
@@ -696,7 +871,9 @@ Como próximos passos, o projeto pode ser expandido com:
 
 Projeto desenvolvido como estudo e aplicação prática de:
 
-* Data Science
-* Time Series Forecasting
-* Machine Learning
-* Statistical Modeling
+- Data Science
+- Time Series Forecasting
+- Machine Learning
+- Statistical Modeling
+- Deploy de Modelos
+- Streamlit
